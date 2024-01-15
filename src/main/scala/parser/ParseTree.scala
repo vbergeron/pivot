@@ -40,7 +40,7 @@ object ParseTree {
     case Union(head: SetExpr, tail: Seq[SetExpr])
     case Diff(head: SetExpr, tail: Seq[SetExpr])
     case PipeTo(source: SetExpr, sink: String)
-    case Join(right: SetExpr, left: SetExpr, t: JoinType)
+    case Join(left: SetExpr, right: SetExpr, t: JoinType)
 
   object SetExpr:
     case class Field(name: Option[String], value: ValueExpr)

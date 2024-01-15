@@ -29,8 +29,28 @@ object SetExprParser:
   def factor[$: P]: P[SetExpr] =
     P(query | record | parens)
 
+  def fullJoin[$: P]: P[SetExpr] =
+    P(factor ~ ws ~ "|><|" ~ ws ~ factor.?).map:
+      case (left, Some(right)) => SetExpr.Join(left, right, JoinType.Full)
+      case (left, None)        => left
+
+  def rightJoin[$: P]: P[SetExpr] =
+    P(fullJoin ~ ws ~ "|>" ~ ws ~ fullJoin.?).map:
+      case (left, Some(right)) => SetExpr.Join(left, right, JoinType.Right)
+      case (left, None)        => left
+
+  def leftJoin[$: P]: P[SetExpr] =
+    P(rightJoin ~ ws ~ "<|" ~ ws ~ rightJoin.?).map:
+      case (left, Some(right)) => SetExpr.Join(left, right, JoinType.Left)
+      case (left, None)        => left
+
+  def innerJoin[$: P]: P[SetExpr] =
+    P(leftJoin ~ ws ~ "<|>" ~ ws ~ leftJoin.?).map:
+      case (left, Some(right)) => SetExpr.Join(left, right, JoinType.Inner)
+      case (left, None)        => left
+
   def union[$: P]: P[SetExpr] =
-    P(factor ~ ws ~ ("+" ~/ ws ~ factor ~ ws).rep).map: (head, tail) =>
+    P(innerJoin ~ ws ~ ("+" ~/ ws ~ innerJoin ~ ws).rep).map: (head, tail) =>
       if tail.nonEmpty then SetExpr.Union(head, tail) else head
 
   def diff[$: P]: P[SetExpr] =
