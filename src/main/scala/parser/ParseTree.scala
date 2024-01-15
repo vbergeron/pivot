@@ -28,12 +28,19 @@ object ParseTree {
 
   case class Relation(name: String, columns: Seq[Column]) extends ParseTree
 
+  enum JoinType:
+    case Inner
+    case Left
+    case Right
+    case Full
+
   enum SetExpr extends ParseTree:
     case Record(fields: Seq[SetExpr.Field])
     case QueryWrap(query: Query)
     case Union(head: SetExpr, tail: Seq[SetExpr])
     case Diff(head: SetExpr, tail: Seq[SetExpr])
     case PipeTo(source: SetExpr, sink: String)
+    case Join(right: SetExpr, left: SetExpr, t: JoinType)
 
   object SetExpr:
     case class Field(name: Option[String], value: ValueExpr)

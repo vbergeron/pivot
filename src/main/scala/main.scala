@@ -4,10 +4,13 @@ import executor.Executor
 import parser.{ParseTree, ParseTreeParser}
 import planner.{LogicalStep, Plan}
 
+import scala.annotation.tailrec
 import scala.io.StdIn
+import scala.util.control
 
 @main
 def main(): Unit = {
+  @tailrec
   def loop(plan: Plan): Unit =
     print("pivot] ")
     StdIn.readLine() match
@@ -23,13 +26,15 @@ def main(): Unit = {
         loop(plan)
       case line =>
         if line != null && line.nonEmpty then
-          try
-            val parsed =
-              fastparse.parse(line, ParseTreeParser.file(_)).get.value
-            loop(LogicalStep.aggregate(plan, parsed))
-          catch
-            case e: Throwable =>
+          val parsed = control.Exception.allCatch.either:
+            fastparse.parse(line, ParseTreeParser.file(_)).get.value
+
+          parsed match {
+            case Right(value) =>
+              loop(LogicalStep.aggregate(plan, value))
+            case Left(e) =>
               println(s"ERR: ${e.getClass.getSimpleName} ${e.getMessage}")
               loop(plan)
+          }
   loop(Plan.empty)
 }

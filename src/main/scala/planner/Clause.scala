@@ -22,9 +22,13 @@ case class Clause(
 object Clause:
   val empty: Clause = Clause(Seq.empty, Seq.empty, Seq.empty)
 
-  def fromParsed(relation: Relation, parsed: ParseTree.Query.Clause): Clause =
+  def fromParsed(
+      catalog: Seq[Relation],
+      relation: Relation,
+      parsed: ParseTree.Query.Clause
+  ): Clause =
     val clause = parsed.subclauses.foldLeft(empty): (clause, elem) =>
-      SubClause.fromParsed(relation, elem) match
+      SubClause.fromParsed(catalog, relation, elem) match
         case it: SubClause.Project => clause.addProject(it)
         case it: SubClause.Filter  => clause.addFilter(it)
         case it: SubClause.Sort    => clause.addSort(it)

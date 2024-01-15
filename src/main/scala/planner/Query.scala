@@ -22,6 +22,6 @@ object Query:
     val (q, _) =
       parsed.clauses.foldLeft((Query.from(relation), relation)):
         case ((query, relation), parsedClause) =>
-          val clause = Clause.fromParsed(relation, parsedClause)
+          val clause = Clause.fromParsed(catalog, relation, parsedClause)
           (query.addClause(clause), Relation("", clause.schema))
     q

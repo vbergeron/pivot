@@ -9,12 +9,17 @@ enum SubClause:
   case Sort(field: Column, order: Order)
 
 object SubClause:
-  def fromParsed(relation: Relation, parsed: ParseTree.SubClause): SubClause =
+  def fromParsed(
+      catalog: Seq[Relation],
+      relation: Relation,
+      parsed: ParseTree.SubClause
+  ): SubClause =
     parsed match
       case ParseTree.SubClause.Filter(predicate) =>
         SubClause.Filter(
           TypedExpr.fromUntyped(
             predicate,
+            catalog,
             relation.schema,
             None,
             Some(relation)
@@ -22,10 +27,16 @@ object SubClause:
         )
       case ParseTree.SubClause.Project(expr, alias) =>
         val typed =
-          TypedExpr.fromUntyped(expr, relation.schema, None, Some(relation))
+          TypedExpr.fromUntyped(
+            expr,
+            catalog,
+            relation.schema,
+            None,
+            Some(relation)
+          )
         SubClause.Project(
           typed,
-          Column(alias.getOrElse(TypedExpr.name(typed)), typed._type)
+          Column(alias.getOrElse(TypedExpr.name(typed)), typed.t)
         )
       case ParseTree.SubClause.Sort(column, order) =>
         relation.schema.find(_.name == column) match

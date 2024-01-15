@@ -50,15 +50,16 @@ object LogicalSet:
             )
           case Some(schema) =>
             val typed = fields.map(field =>
-              TypedExpr.fromUntyped(field.value, Seq.empty, None, None)
+              TypedExpr.fromUntyped(field.value, catalog, Seq.empty, None, None)
             )
             Record(schema, typed)
           case None =>
             val typed = fields.map(field =>
               val expr =
-                TypedExpr.fromUntyped(field.value, Seq.empty, None, None)
+                TypedExpr
+                  .fromUntyped(field.value, catalog, Seq.empty, None, None)
               (
-                Column(field.name.getOrElse(TypedExpr.name(expr)), expr._type),
+                Column(field.name.getOrElse(TypedExpr.name(expr)), expr.t),
                 expr
               )
             )

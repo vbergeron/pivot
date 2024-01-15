@@ -2,50 +2,55 @@ package pivot
 package planner
 
 import parser.ParseTree
-import parser.ParseTree.ValueExpr
+
+import pivot.parser.ParseTree.ValueExpr
 
 sealed trait TypedExpr:
-  def _type: Type
+  def t: Type
 
 object TypedExpr:
   case class RowID(relation: Relation) extends TypedExpr:
-    def _type = Type.RowID(relation)
+    def t = Type.RowID(relation)
 
   case class Ref(column: Column) extends TypedExpr:
-    def _type = column._type
+    def t = column.t
 
   case class Int(value: Long) extends TypedExpr:
-    def _type = Type.Int
+    def t = Type.Int
 
   case class Str(value: String) extends TypedExpr:
-    def _type = Type.Str
+    def t = Type.Str
 
   case class Bool(value: Boolean) extends TypedExpr:
-    def _type = Type.Bool
+    def t = Type.Bool
 
   case class Greater(lhs: TypedExpr, rhs: TypedExpr) extends TypedExpr:
-    def _type = Type.Bool
+    def t = Type.Bool
 
   case class Lower(lhs: TypedExpr, rhs: TypedExpr) extends TypedExpr:
-    def _type = Type.Bool
+    def t = Type.Bool
 
   case class Equal(lhs: TypedExpr, rhs: TypedExpr) extends TypedExpr:
-    def _type = Type.Bool
+    def t = Type.Bool
 
   case class And(lhs: TypedExpr, rhs: TypedExpr) extends TypedExpr:
-    def _type = Type.Bool
+    def t = Type.Bool
 
   case class Or(lhs: TypedExpr, rhs: TypedExpr) extends TypedExpr:
-    def _type = Type.Bool
+    def t = Type.Bool
 
   case class Not(expr: TypedExpr) extends TypedExpr:
-    def _type = Type.Bool
+    def t = Type.Bool
 
   case class Cast(expr: TypedExpr, to: Type) extends TypedExpr:
-    def _type = to
+    def t = to
+
+  case class AQuery(query: Query) extends TypedExpr:
+    def t = query.schema.head.t
 
   def fromUntyped(
       expr: ParseTree.ValueExpr,
+      catalog: Seq[Relation],
       schema: Seq[Column],
       implicitColumn: Option[Column],
       implicitRelation: Option[Relation]
@@ -54,9 +59,9 @@ object TypedExpr:
         make: (TypedExpr, TypedExpr) => TypedExpr
     ): TypedExpr =
       val (l, r) = (rec(lhs), rec(rhs))
-      if l._type == r._type then make(l, r)
-      else if l._type castable r._type then make(Cast(l, r._type), r)
-      else if r._type castable l._type then make(l, Cast(r, l._type))
+      if l.t == r.t then make(l, r)
+      else if l.t castable r.t then make(Cast(l, r.t), r)
+      else if r.t castable l.t then make(l, Cast(r, l.t))
       else throw Exception("type error")
 
     def rec(expr: ParseTree.ValueExpr): TypedExpr =
@@ -66,14 +71,14 @@ object TypedExpr:
         case ValueExpr.Equal(lhs, rhs)   => operator(lhs, rhs)(Equal.apply)
         case ValueExpr.And(lhs, rhs) =>
           val (l, r) = (rec(lhs), rec(rhs))
-          if l._type != Type.Bool then throw Exception("type error")
-          if r._type != Type.Bool then throw Exception("type error")
+          if l.t != Type.Bool then throw Exception("type error")
+          if r.t != Type.Bool then throw Exception("type error")
           And(l, r)
 
         case ValueExpr.Or(lhs, rhs) =>
           val (l, r) = (rec(lhs), rec(rhs))
-          if l._type != Type.Bool then throw Exception("type error")
-          if r._type != Type.Bool then throw Exception("type error")
+          if l.t != Type.Bool then throw Exception("type error")
+          if r.t != Type.Bool then throw Exception("type error")
           Or(l, r)
 
         case ValueExpr.Dot =>
@@ -92,6 +97,14 @@ object TypedExpr:
             case None         => throw Exception("Column not found")
         case ValueExpr.Int(value) => Int(value)
         case ValueExpr.Str(value) => Str(value)
+
+        case ValueExpr.Query(query) =>
+          val parsed = Query.fromParsed(catalog, query)
+          if parsed.schema.length > 1 then
+            throw Exception(
+              s"${parsed.schema.mkString("[", ", ", "]")} returns more than one field"
+            )
+          AQuery(parsed)
     rec(expr)
 
   def name(typed: TypedExpr): String =
