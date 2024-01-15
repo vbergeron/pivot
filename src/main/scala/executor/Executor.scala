@@ -106,7 +106,7 @@ object Executor:
         executeLogicalSet(sources, source)
           .tapEach(ctx.executeSink(sink))
 
-      case LogicalSet.Record(_, fields) =>
+      case LogicalSet.Record(schema, fields) =>
         val ctx = Ctx(sources, Seq.empty)
         Seq(Row(0, fields.map(e => ctx.eval(e)(Row(0, Seq.empty)))))
 

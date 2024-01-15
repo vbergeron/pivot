@@ -22,7 +22,7 @@ object ValueExprParser:
     P(identifier).map(ValueExpr.Ref.apply)
 
   def query[$: P]: P[ValueExpr.Query] =
-    P("exec" ~ ws ~ QueryParser.apply).map(ValueExpr.Query.apply)
+    P("run" ~/ ws ~ QueryParser.apply).map(ValueExpr.Query.apply)
 
   def const[$: P]: P[ValueExpr] =
     P(query | ref | str | int | dot | hash | parens)

@@ -8,7 +8,10 @@ ThisBuild / scalaVersion := "3.3.1"
 
 lazy val root = (project in file("."))
   .settings(
-    name                                 := "pivot",
-    idePackagePrefix                     := Some("pivot"),
-    libraryDependencies += "com.lihaoyi" %% "fastparse" % "3.0.2"
+    name             := "pivot",
+    idePackagePrefix := Some("pivot"),
+    libraryDependencies ++= Seq(
+      "com.lihaoyi"   %% "fastparse" % "3.0.2",
+      "org.scalameta" %% "munit"     % "1.0.0-M10" % Test
+    )
   )

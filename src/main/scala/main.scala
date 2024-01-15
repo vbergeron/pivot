@@ -27,7 +27,10 @@ def main(): Unit = {
       case line =>
         if line != null && line.nonEmpty then
           val parsed = control.Exception.allCatch.either:
-            fastparse.parse(line, ParseTreeParser.file(_)).get.value
+            fastparse
+              .parse(line, ParseTreeParser.file(_), verboseFailures = true)
+              .get
+              .value
 
           parsed match {
             case Right(value) =>

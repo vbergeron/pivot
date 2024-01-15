@@ -121,3 +121,4 @@ object TypedExpr:
       case And(lhs, rhs)     => s"and(${name(lhs)},${name(rhs)})"
       case Or(lhs, rhs)      => s"or(${name(lhs)},${name(rhs)})"
       case Not(expr)         => s"not(${name(expr)}"
+      case AQuery(q) => s"query(...)"
