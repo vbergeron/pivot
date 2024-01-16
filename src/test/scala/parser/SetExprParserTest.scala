@@ -81,4 +81,45 @@ class SetExprParserTest extends munit.FunSuite, ParserTest {
       "(A[#] + B[#]) > stdout",
       PipeTo(force(SetExprParser.apply)("A[#] + B[#]"), "stdout")
     )
+
+  test("setexpr: inner join"):
+    parseSuccess(SetExprParser.apply)(
+      "A[#] <> B[#]",
+      Join(
+        QueryWrap(force(QueryParser.apply)("A[#]")),
+        QueryWrap(force(QueryParser.apply)("B[#]")),
+        JoinType.Inner
+      )
+    )
+
+  test("setexpr: right join"):
+    parseSuccess(SetExprParser.apply)(
+      "A[#] >> B[#]",
+      Join(
+        QueryWrap(force(QueryParser.apply)("A[#]")),
+        QueryWrap(force(QueryParser.apply)("B[#]")),
+        JoinType.Right
+      )
+    )
+
+  test("setexpr: left join"):
+    parseSuccess(SetExprParser.apply)(
+      "A[#] << B[#]",
+      Join(
+        QueryWrap(force(QueryParser.apply)("A[#]")),
+        QueryWrap(force(QueryParser.apply)("B[#]")),
+        JoinType.Left
+      )
+    )
+
+  test("setexpr: full join"):
+    parseSuccess(SetExprParser.apply)(
+      "A[#] >< B[#]",
+      Join(
+        QueryWrap(force(QueryParser.apply)("A[#]")),
+        QueryWrap(force(QueryParser.apply)("B[#]")),
+        JoinType.Full
+      )
+    )
+
 }
