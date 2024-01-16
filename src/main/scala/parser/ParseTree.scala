@@ -37,7 +37,7 @@ object ParseTree {
   enum SetExpr extends ParseTree:
     case Record(fields: Seq[SetExpr.Field])
     case QueryWrap(query: Query)
-    case Union(head: SetExpr, tail: Seq[SetExpr])
+    case Union(sets: SetExpr, tail: Seq[SetExpr])
     case Diff(head: SetExpr, tail: Seq[SetExpr])
     case PipeTo(source: SetExpr, sink: String)
     case Join(left: SetExpr, right: SetExpr, t: JoinType)

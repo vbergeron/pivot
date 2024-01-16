@@ -8,7 +8,7 @@ import ParseTree.*
 object SetExprParser:
 
   def field[$: P]: P[SetExpr.Field] =
-    P((identifier ~ ws ~/ ":").? ~ ws ~ ValueExprParser.apply)
+    P((identifier ~ ws ~/ ":" ~ ws).? ~ ValueExprParser.apply)
       .map(SetExpr.Field.apply)
 
   def record[$: P]: P[SetExpr.Record] =
@@ -35,17 +35,17 @@ object SetExprParser:
   //    case (left, None)        => left
 
   // def rightJoin[$: P]: P[SetExpr] =
-  //  P(fullJoin ~ ws ~ "|>" ~ ws ~ fullJoin.?).map:
+  //  P(fullJoin ~ ws ~ "|>|>" ~ ws ~ fullJoin.?).map:
   //    case (left, Some(right)) => SetExpr.Join(left, right, JoinType.Right)
   //    case (left, None)        => left
 
   // def leftJoin[$: P]: P[SetExpr] =
-  //  P(rightJoin ~ ws ~ "<|" ~ ws ~ rightJoin.?).map:
+  //  P(rightJoin ~ ws ~ "<|<|" ~ ws ~ rightJoin.?).map:
   //    case (left, Some(right)) => SetExpr.Join(left, right, JoinType.Left)
   //    case (left, None)        => left
 
   // def innerJoin[$: P]: P[SetExpr] =
-  //  P(leftJoin ~ ws ~ "<|>" ~ ws ~ leftJoin.?).map:
+  //  P(leftJoin ~ ws ~ "<||>" ~ ws ~ leftJoin.?).map:
   //    case (left, Some(right)) => SetExpr.Join(left, right, JoinType.Inner)
   //    case (left, None)        => left
 
